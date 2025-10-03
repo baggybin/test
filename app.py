@@ -1,6 +1,11 @@
-from flask import Flask
+from flask import Flask, request, jsonify, abort
+import random
+import string
+import requests
 
 app = Flask(__name__)
+def random_letters(length):
+    return ''.join(random.choices(string.ascii_letters, k=length))
 
 @app.route("/upload", methods=["POST"])
 def upload():
@@ -11,16 +16,15 @@ def upload():
 
 @app.route("/", methods=["GET"])
 def root():
-    return "Hello from Cloud Run!"
+    n = random.randint(10, 50)  # integer length between 10 and 50
+    body = f"Hello from C2 Server: {random_letters(n)}\n"
+    return body, 200, {"Content-Type": "text/plain; charset=utf-8"}
 
 @app.route("/", methods=["POST"])
-def echo():
-    if not request.is_json:
-        abort(400, description="Content-Type must be application/json")
-    data = request.get_json(silent=True)
-    if data is None:
-        abort(400, description="Invalid JSON")
-    return jsonify({"received": data}), 200
+def count_bytes():
+    raw = request.get_data()        
+    size = len(raw)
+    return {"byte_count": size}, 200
 
 if __name__ == "__main__":
     import os
